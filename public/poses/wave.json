@@ -1,0 +1,23 @@
+{
+  "name": "wave",
+  "duration": 1.2,
+  "loop": true,
+  "transitionSeconds": 0.22,
+  "tracks": {
+    "rightUpperArm": [
+      { "time": 0, "rotation": [0.04, 0, 0.15] },
+      { "time": 1.2, "rotation": [0.04, 0, 0.15] }
+    ],
+    "rightLowerArm": [
+      { "time": 0, "rotation": [-0.2, 0, -1.8] },
+      { "time": 1.2, "rotation": [-0.2, 0, -1.8] }
+    ],
+    "rightHand": [
+      { "time": 0, "rotation": [1.57, -0.35, -0.3] },
+      { "time": 0.3, "rotation": [1.57, 0.35, 0.3] },
+      { "time": 0.6, "rotation": [1.57, -0.35, -0.3] },
+      { "time": 0.9, "rotation": [1.57, 0.35, 0.3] },
+      { "time": 1.2, "rotation": [1.57, -0.35, -0.3] }
+    ]
+  }
+}

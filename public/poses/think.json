@@ -1,0 +1,20 @@
+{
+  "name": "think",
+  "duration": 2.4,
+  "loop": true,
+  "transitionSeconds": 0.4,
+  "tracks": {
+    "rightUpperArm": [
+      { "time": 0, "rotation": [0.04, 0, 0.92] },
+      { "time": 2.4, "rotation": [0.04, 0, 0.92] }
+    ],
+    "rightLowerArm": [
+      { "time": 0, "rotation": [-0.25, 0, -0.75] },
+      { "time": 2.4, "rotation": [-0.25, 0, -0.75] }
+    ],
+    "rightHand": [
+      { "time": 0, "rotation": [0.1, 0, 0.2] },
+      { "time": 2.4, "rotation": [0.1, 0, 0.2] }
+    ]
+  }
+}

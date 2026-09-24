@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AICHAT Desktop Avatar</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="desktop-mode">
+  <div id="app">
+    <!-- Top Draggable Handle for moving window on desktop -->
+    <div class="desktop-drag-handle" title="Seret untuk memindahkan posisi karakter">
+      <span class="drag-icon">⋮⋮</span>
+      <span id="desktop-status-text">Memuat avatar…</span>
+    </div>
+
+    <!-- 3D VRM Avatar Main Area -->
+    <main>
+      <div id="avatar-stage"></div>
+      <div id="avatar-error" class="avatar-error" hidden></div>
+
+      <!-- Floating Conversation Drawer / Bubble (Toggleable via Dock) -->
+      <section id="conversation-drawer" class="conversation desktop-closed" aria-label="Percakapan">
+        <div class="chat-header">
+          <div class="mini-avatar">m<span></span></div>
+          <div>
+            <h2 id="companion-name">Mamad</h2>
+            <div id="state-label" role="status">Menyiapkan ruang percakapan…</div>
+          </div>
+          <button id="chat-drawer-close" class="mini-close" title="Sembunyikan chat">✕</button>
+        </div>
+        <div id="messages" class="messages" role="log" aria-live="polite">
+          <article class="message assistant welcome">
+            <span class="message-by">MAMAD</span>
+            <p>Hai! Aku di sini menemani desktop-mu. Klik mic untuk bicara atau ketik pesan.</p>
+          </article>
+        </div>
+        <div id="notice" class="notice" role="status" hidden></div>
+        <div class="composer-area">
+          <div id="recording-preview" class="recording-preview" hidden>
+            <span class="record-dot"></span>
+            <span id="recording-label">Mendengarkan…</span>
+            <div class="level-track"><div id="mic-level"></div></div>
+            <span id="recording-time">0:00</span>
+          </div>
+          <button id="mic-button" class="mic-button">
+            <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3m-4 0h8"/></svg>
+            <span id="mic-label">Klik untuk bicara</span>
+            <kbd>MIC</kbd>
+          </button>
+          <form id="chat-form">
+            <textarea id="chat-input" rows="1" maxlength="4000" placeholder="Ketik pesan di sini…" aria-label="Pesan untuk asisten"></textarea>
+            <button id="send-button" class="send-button" type="submit" aria-label="Kirim pesan">
+              <svg viewBox="0 0 24 24"><path d="m6 12 6-6 6 6M12 6v13"/></svg>
+            </button>
+          </form>
+          <div class="composer-footer">
+            <label class="quiet-switch"><input id="auto-talk" type="checkbox" /> Percakapan berlanjut</label>
+            <button id="stop-button" disabled title="Hentikan rekaman, STT, jawaban, dan siklus percakapan">■ Stop percakapan</button>
+          </div>
+          <p class="auto-talk-help">Mic aktif lagi setelah jawaban selesai. Audio dikirim otomatis setelah sekitar 1,2 detik hening; tekan Stop untuk mematikan siklus.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Floating Action Dock -->
+    <div class="desktop-floating-actions">
+      <button id="desktop-mic-btn" class="desktop-action-btn" title="Bicara / Mic (M)">🎙️</button>
+      <button id="desktop-chat-toggle" class="desktop-action-btn" title="Buka / Tutup Percakapan (C)">💬</button>
+      <button id="desktop-pose-btn" class="desktop-action-btn" title="Pose Browser (P)">🎭</button>
+      <button id="desktop-settings-btn" class="desktop-action-btn" title="Pengaturan (S)">⚙️</button>
+      <button id="desktop-close-btn" class="desktop-action-btn close-btn" title="Tutup Aplikasi">✕</button>
+    </div>
+  </div>
+
+  <!-- Modal Settings Dialog -->
+  <dialog id="settings-dialog">
+    <div class="dialog-heading">
+      <div>
+        <span class="eyebrow">SETTINGS</span>
+        <h2>Pengaturan</h2>
+      </div>
+      <button id="settings-close" class="icon-button" aria-label="Tutup pengaturan">✕</button>
+    </div>
+    
+    <label>System Prompt
+      <textarea id="system-prompt-setting" rows="6" maxlength="6000"
+        style="min-height: 112px; max-height: 220px; resize: vertical; border: 1px solid #dce5d8; border-radius: 8px; background: #fbfdf9; padding: 9px; box-sizing: border-box;"
+        placeholder="Instruksi perilaku dan kepribadian asisten…"></textarea>
+    </label>
+    <div style="display: flex; justify-content: flex-end; margin-top: 6px;">
+      <button id="system-prompt-reset" type="button"
+        style="padding: 6px 10px; background: #f4f7f0; border: 1px solid #cbd9c7; border-radius: 7px; color: #365a40; font-size: 10px; cursor: pointer;">
+        ↺ Reset default
+      </button>
+    </div>
+    <p style="font-size: 9px; color: #819582; margin: 4px 0 0; line-height: 1.5;">
+      Instruksi ini menjadi konteks utama asisten dan dapat dipersonalisasi. Reset default mengisi ulang prompt bawaan; tekan Apply untuk menyimpannya.
+    </p>
+
+    <!-- OpenAI-Compatible LLM Settings -->
+    <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #e2e8dc;">
+      <span class="eyebrow" style="color: #436e4f; font-weight: 700;">KONEKSI AI (OPENAI COMPATIBLE)</span>
+      
+      <label style="margin-top: 10px;">AI Base URL
+        <input id="ai-base-url-setting" placeholder="https://generativelanguage.googleapis.com/v1beta/openai" />
+      </label>
+
+      <label style="margin-top: 10px;">AI API Key
+        <input id="ai-api-key-setting" type="password" placeholder="Masukkan API Key (contoh: AQ.Ab8...)" />
+      </label>
+
+      <div style="display: flex; gap: 8px; align-items: center; margin-top: 10px;">
+        <button id="test-llm-btn" type="button" style="padding: 9px 13px; background: #e3efe7; border: 1px solid #b7dcbe; border-radius: 8px; color: #1c4b31; font-weight: 700; font-size: 11px; cursor: pointer;">
+          ⚡ Tes & Ambil Model AI
+        </button>
+        <span id="llm-test-status" style="font-size: 10px; color: #607968;"></span>
+      </div>
+
+      <label style="margin-top: 10px;">Model AI Terpilih
+        <select id="ai-model-setting">
+          <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Rekomendasi Hemat & Cepat)</option>
+        </select>
+      </label>
+      <p style="font-size: 9px; color: #7f9584; margin: 4px 0 0; line-height: 1.4;">
+        Gunakan <b>gemini-3.1-flash-lite</b> untuk respon sangat cepat dan hemat biaya. Klik "Tes & Ambil Model AI" untuk memuat daftar model terbaru dari provider.
+      </p>
+    </div>
+
+    <!-- STT Model & Hardware -->
+    <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #e2e8dc;">
+      <span class="eyebrow" style="color: #436e4f; font-weight: 700;">MODEL & HARDWARE AUDIO</span>
+      
+      <label style="margin-top: 10px;">Model STT (Speech-to-Text)
+        <select id="stt-model-setting">
+          <option value="base">faster-whisper-base (~74M params · Cepat & Ringan)</option>
+          <option value="small">faster-whisper-small (~244M params · Lebih Akurat)</option>
+        </select>
+      </label>
+
+      <label style="margin-top: 10px;">Target Hardware STT
+        <select id="hardware-setting">
+          <option value="cpu">CPU (Hemat Daya / RAM int8)</option>
+          <option value="cuda:0">GPU 0: NVIDIA RTX 3060 (Layar / LLM Utama)</option>
+          <option value="cuda:1">GPU 1: NVIDIA RTX 3060 (Sekunder / Khusus Audio)</option>
+        </select>
+      </label>
+
+      <label style="display: flex; align-items: center; justify-content: space-between; margin-top: 12px; cursor: pointer;">
+        <span style="font-weight: 600; color: #324c3a;">Deteksi Pembicara (Diarization)</span>
+        <input type="checkbox" id="diarization-setting" style="width: 18px; height: 18px; margin: 0; accent-color: #183f36;" />
+      </label>
+
+      <!-- In-Game Style VRAM Meter -->
+      <div id="vram-box" style="margin: 14px 0; padding: 12px 14px; background: #13221b; color: #d0edd6; border-radius: 10px; border: 1px solid #294838; font-family: 'Consolas', monospace;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; font-weight: 600;">
+          <span>ESTIMASI VRAM (GPU)</span>
+          <span id="vram-val" style="color: #6ee7b7;">0.0 GB / 12.0 GB (0%)</span>
+        </div>
+        <div style="height: 9px; background: #0a1410; border-radius: 5px; overflow: hidden; position: relative;">
+          <div id="vram-bar" style="height: 100%; width: 0%; background: linear-gradient(90deg, #10b981, #06b6d4); transition: width 0.3s ease, background 0.3s ease;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 9px; margin-top: 6px; color: #84a890;">
+          <span id="vram-hw-note">Target: CPU</span>
+          <span id="vram-status-badge" style="padding: 1px 7px; border-radius: 4px; background: #064e3b; color: #a7f3d0; font-weight: 700;">HEMAT</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transcribe & Memory -->
+    <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #e2e8dc;">
+      <span class="eyebrow" style="color: #436e4f; font-weight: 700;">TRANSCRIBE & MEMORY</span>
+      
+      <label style="margin-top: 10px;">Kata Pemicu (Wake Word)
+        <input id="wake-word-setting" maxlength="40" value="Hai Anna" placeholder="contoh: Hai Anna, Mamad" />
+      </label>
+
+      <label style="display: flex; align-items: center; justify-content: space-between; margin-top: 12px; cursor: pointer;">
+        <span style="font-weight: 600; color: #324c3a;">Mode Rekam Diam (Silent Transcribe)</span>
+        <input type="checkbox" id="silent-setting" style="width: 18px; height: 18px; margin: 0; accent-color: #183f36;" />
+      </label>
+      <p style="font-size: 9px; color: #819582; margin: 4px 0 10px; line-height: 1.5;">
+        Jika aktif: audio dicatat diam-diam ke folder <code>transcribe/*.srt</code> tanpa suara avatar sampai kata pemicu diucapkan.
+      </p>
+
+      <button id="compact-memory-btn" type="button" style="width: 100%; margin-top: 6px; padding: 10px; font-size: 11px; background: #e3efe7; border: 1px solid #b7dcbe; border-radius: 8px; color: #1c4b31; font-weight: 700; cursor: pointer;">
+        📁 Rangkum Transkrip ke Memori Sekarang
+      </button>
+    </div>
+
+    <!-- Voice & Avatar -->
+    <div style="margin-top: 14px; padding-top: 14px; border-top: 1px solid #e2e8dc;">
+      <span class="eyebrow" style="color: #436e4f; font-weight: 700;">SUARA & AVATAR</span>
+      <label style="margin-top: 10px;">Suara
+        <select id="voice-setting">
+          <option value="id-ID-GadisNeural">Gadis · Indonesia</option>
+          <option value="id-ID-ArdiNeural">Ardi · Indonesia</option>
+          <option value="en-US-AriaNeural">Aria · English</option>
+          <option value="en-US-GuyNeural">Guy · English</option>
+          <option value="ja-JP-NanamiNeural">Nanami · 日本語</option>
+          <option value="system">Suara bawaan sistem (cadangan)</option>
+        </select>
+      </label>
+      <label>Kecepatan suara <span id="rate-value">0%</span>
+        <input id="rate-setting" type="range" min="-30" max="30" step="5" value="0" />
+      </label>
+      <label>Animasi
+        <select id="fps-setting">
+          <option value="30">30 FPS · Seimbang</option>
+          <option value="15">15 FPS · Lebih hemat</option>
+        </select>
+      </label>
+      <label>Perangkat mic
+        <select id="device-setting">
+          <option value="">Default sistem</option>
+        </select>
+      </label>
+      <div class="settings-actions">
+        <button id="test-voice" type="button">Tes suara</button>
+        <label class="upload-button">Ganti VRM<input id="avatar-upload" type="file" accept=".vrm" hidden /></label>
+      </div>
+    </div>
+
+    <p class="settings-note">Apply menyimpan konfigurasi ke <code>.env</code> dan menunggu model STT benar-benar siap di hardware yang dipilih.</p>
+    
+    <div style="display: flex; gap: 10px; margin-top: 16px;">
+      <button id="settings-apply" disabled style="flex: 2; padding: 12px; background: #183f36; color: #fff; font-weight: 700; font-size: 12px; border: 0; border-radius: 9px; cursor: pointer; transition: opacity 0.2s;">
+        ✓ Apply
+      </button>
+      <button id="settings-close-btn" type="button" style="flex: 1; padding: 12px; background: #eef2e7; border: 1px solid #d4decb; border-radius: 9px; font-size: 12px; cursor: pointer;">
+        Tutup
+      </button>
+    </div>
+    <div style="margin-top: 10px; text-align: center;">
+      <button id="clear-chat" class="text-button" type="button">Mulai percakapan baru</button>
+    </div>
+  </dialog>
+
+  <!-- Separate Pose Browser and keyframe editor -->
+  <dialog id="pose-browser-dialog" class="pose-browser-dialog">
+    <div class="pose-browser-heading">
+      <div>
+        <span class="eyebrow">POSE BROWSER</span>
+        <h2>Pose Browser</h2>
+      </div>
+      <button id="pose-browser-close" class="icon-button" aria-label="Tutup Pose Browser">✕</button>
+    </div>
+    <div class="pose-browser-layout">
+      <aside class="pose-library" aria-label="Daftar pose">
+        <div class="pose-library-heading">
+          <span class="eyebrow">LIBRARY</span>
+          <button id="pose-add-btn" type="button" class="pose-add-button">＋ Add pose</button>
+        </div>
+        <p class="pose-browser-help">Klik kartu untuk membuka preview dan editor. Klik tulang pada avatar untuk memilihnya; gunakan gizmo Rotate. Drag kanan menggeser kamera; wheel untuk zoom.</p>
+        <div id="pose-cards" class="pose-cards"></div>
+        <select id="pose-select" class="pose-hidden-select" aria-label="Pilih pose"></select>
+      </aside>
+      <section class="pose-browser-workspace">
+        <div class="pose-preview-toolbar">
+          <div>
+            <span class="eyebrow">PREVIEW</span>
+            <strong id="pose-preview-title">Pilih pose</strong>
+          </div>
+          <div class="pose-preview-actions">
+            <button id="pose-copy-keyframe-btn" type="button" title="Salin keyframe terpilih (Ctrl+C)" disabled>📋 Copy</button>
+            <button id="pose-paste-keyframe-btn" type="button" title="Tempel keyframe pada waktu aktif (Ctrl+V)" disabled>📋 Paste</button>
+            <button id="pose-preview-btn" type="button" aria-keyshortcuts="Space" title="Space: jeda atau lanjutkan preview pose" disabled>⏸ Pause</button>
+          </div>
+        </div>
+        <div id="pose-preview-stage" class="pose-preview-stage" tabindex="0" aria-label="Preview avatar pose">
+          <div class="pose-preview-stage-actions" role="toolbar" aria-label="Kontrol bone dan keyframe">
+            <button id="pose-undo-btn" type="button" class="pose-history-button" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+            <button id="pose-redo-btn" type="button" class="pose-history-button" title="Redo (Ctrl+Y)" disabled>↷ Redo</button>
+            <div class="pose-interpolation-wrap" title="Pilih tipe interpolasi dari keyframe aktif ke keyframe berikutnya">
+              <label for="pose-keyframe-interpolation">Interpolasi:</label>
+              <select id="pose-keyframe-interpolation" aria-label="Tipe interpolasi keyframe" disabled>
+                <option value="linear">Linear</option>
+                <option value="easeInOut">Ease In-Out</option>
+                <option value="easeIn">Ease In</option>
+                <option value="easeOut">Ease Out</option>
+                <option value="step">Step</option>
+              </select>
+            </div>
+            <button id="pose-apply-all-keyframes-btn" type="button" class="pose-apply-all-button" title="Terapkan rotasi keyframe aktif ke keyframe-keyframe setelahnya">⇢ Apply all</button>
+            <button id="pose-reset-bone-btn" type="button" title="Kembalikan bone terpilih ke pose awal" disabled>↺ Reset bone</button>
+            <button id="pose-preview-delete-keyframe-btn" type="button" class="pose-danger" title="Hapus keyframe pada waktu aktif" disabled>× Delete keyframe</button>
+          </div>
+        </div>
+        <div class="pose-timeline" aria-label="Timeline preview dan keyframe pose">
+          <input id="pose-timeline-range" type="range" min="0" max="1" step="0.01" value="0" aria-label="Posisi timeline pose" />
+          <div id="pose-keyframe-timeline" class="pose-keyframe-timeline" aria-label="Timeline keyframe Blender">
+            <div id="pose-keyframe-ruler" class="pose-keyframe-ruler"></div>
+            <div id="pose-keyframe-track" class="pose-keyframe-track"></div>
+          </div>
+          <div class="pose-timeline-meta">
+            <span id="pose-timeline-time">0.00s / 0.00s</span>
+            <span id="pose-timeline-state" data-playing="false">Ready</span>
+          </div>
+          <div class="pose-keyframe-meta"><span id="pose-keyframe-info">0.00s · 0 keyframe</span><span>● keyframe</span></div>
+        </div>
+        <p id="pose-manager-status" class="pose-browser-status"></p>
+
+        <div id="pose-editor" class="pose-editor" hidden>
+          <div class="pose-editor-heading">
+            <span class="eyebrow">KEYFRAME EDITOR</span>
+            <span class="pose-editor-note">Rotasi/posisi tulang · mulut `aa/ih/ou` disimpan di expressionTracks</span>
+          </div>
+          <label>Nama pose
+            <input id="pose-name" maxlength="40" placeholder="contoh: greeting" />
+          </label>
+          <div class="pose-meta-grid">
+            <label>Durasi (detik)
+              <input id="pose-duration" type="number" min="0.1" max="60" step="0.1" />
+            </label>
+            <label>Transisi (detik)
+              <input id="pose-transition" type="number" min="0" max="5" step="0.01" />
+            </label>
+            <label class="pose-loop-label"><input id="pose-loop" type="checkbox" /> Loop saat dipakai</label>
+          </div>
+          <div id="pose-armature-toolbar" class="pose-armature-toolbar">
+            <div class="pose-armature-selection">
+              <span class="eyebrow">ARMATURE</span>
+              <strong id="pose-selected-bone">head</strong>
+            </div>
+            <div class="pose-tool-buttons" role="toolbar" aria-label="Alat armature">
+              <button id="pose-rotate-tool" type="button" class="active" title="Putar tulang">↻ Rotate</button>
+              <button id="pose-insert-keyframe" type="button" class="pose-key-action" title="Simpan seluruh pose pada waktu aktif">● Insert keyframe</button>
+              <button id="pose-delete-keyframe" type="button" class="pose-key-delete" title="Hapus keyframe pada waktu aktif">× Delete</button>
+            </div>
+          </div>
+          <p class="pose-armature-hint">Klik bone pada avatar, pilih waktu di timeline, lalu tarik gizmo. Satu marker mewakili satu pose pada waktu tersebut.</p>
+          <div class="pose-editor-actions">
+            <button id="pose-save-btn" type="button" class="pose-primary">💾 Simpan pose</button>
+            <button id="pose-reset-btn" type="button" hidden>↺ Kembalikan bawaan</button>
+            <button id="pose-export-btn" type="button">⇩ Export JSON</button>
+            <button id="pose-delete-btn" type="button" hidden class="pose-danger">Hapus pose</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </dialog>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

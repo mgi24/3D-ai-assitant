@@ -1,0 +1,48 @@
+# Environment & Sensitive Credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+*.egg-info/
+
+# Node.js, Vite & Bundlers
+node_modules/
+dist/
+.browser-profile/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test Outputs & Reports
+test-results/
+
+# Application Logs & Runtime Cache
+logs/
+*.log
+server.pid
+transcribe/*.srt
+!transcribe/rules.md
+memory/*.txt
+!memory/Rules.md
+
+# Large Binary 3D Models & AI Models
+models/
+references/
+*.vrm
+*.vroid
+public/avatar/*.vrm
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini

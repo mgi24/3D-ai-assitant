@@ -1,0 +1,15 @@
+{
+  "name": "nod",
+  "duration": 1.2,
+  "loop": false,
+  "transitionSeconds": 0.22,
+  "tracks": {
+    "head": [
+      { "time": 0, "rotation": [0, 0, 0] },
+      { "time": 0.25, "rotation": [0.12, 0, 0] },
+      { "time": 0.55, "rotation": [-0.08, 0, 0] },
+      { "time": 0.85, "rotation": [0.08, 0, 0] },
+      { "time": 1.2, "rotation": [0, 0, 0] }
+    ]
+  }
+}
