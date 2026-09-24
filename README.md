@@ -1,167 +1,151 @@
-# 3D AI Assistant · VRoid Virtual Companion
+# 3D AI Assistant · VRoid Desktop Companion
 
-Aplikasi desktop Windows untuk berinteraksi dan berbicara secara real-time dengan karakter avatar 3D VRM (**VRoid Studio**). Dilengkapi dengan Speech-to-Text (Faster-Whisper) lokal, Text-to-Speech natural (Edge-TTS), LLM chat responsif (Gemini / OpenAI compatible), serta **3D Pose & Keyframe Editor** lengkap dengan kurva interpolasi (*easing*).
+<p align="center">
+  <img src="docs/screenshots/desktop-assistant.png" alt="3D AI Assistant Desktop Preview" width="720" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
+</p>
 
----
+<p align="center">
+  <b>Asisten avatar 3D interaktif dan transparan untuk desktop Windows.</b><br>
+  Didukung oleh <b>VRoid Studio (Three.js VRM 1.0)</b>, <b>Faster-Whisper (STT)</b>, <b>Edge-TTS</b>, <b>Gemini / OpenAI API</b>, serta <b>3D Pose Editor</b> dengan kurva interpolasi (*easing*).
+</p>
 
-## Fitur Utama
-
-### 1. Avatar 3D VRM & Ekspresi Real-time
-* **Kompatibilitas Penuh VRoid Studio:** Mendukung model VRM 1.0 standar melalui `@pixiv/three-vrm`. Seluruh pose dan armature langsung cocok dengan avatar VRoid apapun tanpa perlu re-rigging.
-* **Lip-Sync & Ekspresi:** Mulut sinkron otomatis saat berbicara menggunakan *blend shapes* viseme (`aa`, `ih`, `ou`).
-* **Micro-Animations Prosedural:** Kedipan mata alami (*auto-blink*), gerakan bernapas (*breathing*), dan penelusuran kepala (*head tracking*).
-
-### 2. Pose & Keyframe Editor Bawaan (Mixamo & Blender Style)
-* **Koleksi Pose Library:** Kartu pose dengan preview animasi interaktif (*idle*, *wave*, *speaking*, *thinking*, *nod*, dll.).
-* **Armature Gizmo 3D:** Klik tulang pada avatar 3D untuk memutar sendi secara presisi dengan gizmo rotasi.
-* **Dope-sheet Timeline Scrubber:** Navigasi waktu animasi, pengaturan durasi, dan transisi loop.
-* **Interpolasi Keyframe (*Easing Curves*):**
-  * `Linear` *(default)*: Pergerakan konstan antar keyframe.
-  * `Ease In-Out`: Gerakan mulus dengan akselerasi dan deselerasi halus di awal dan akhir.
-  * `Ease In`: Mulai perlahan lalu berakselerasi menuju keyframe berikutnya.
-  * `Ease Out`: Mulai cepat lalu melambat lembut saat mendekati keyframe berikutnya.
-  * `Step`: Menahan pose statis sampai keyframe berikutnya tiba (*hold pose*).
-* **Fitur Timeline Lengkap:**
-  * Multi-selection keyframe (seleksi kotak marquee atau `Shift + Klik`).
-  * Copy & Paste keyframe (`Ctrl + C` / `Ctrl + V`) dengan auto-extend durasi timeline jika ditempel melampaui batas akhir.
-  * Undo & Redo bertingkat (`Ctrl + Z` / `Ctrl + Y`).
-  * *Apply All* untuk menyalin rotasi tulang aktif ke seluruh keyframe setelahnya dalam satu klik.
-  * Ekspor & impor pose kustom sebagai file `.json`.
-
-### 3. Voice AI & Percakapan Cerdas
-* **STT Multilingual Lokal:** Menggunakan **Faster-Whisper** (`base` / `small`), mendukung akselerasi CPU (int8) maupun GPU NVIDIA CUDA (float16) dengan indikator pemakaian VRAM.
-* **TTS Natural:** Didukung **Edge-TTS** dengan opsi suara bahasa Indonesia (seperti `id-ID-GadisNeural` dan `id-ID-ArdiNeural`) serta berbagai suara internasional lainnya.
-* **Mode Percakapan Berlanjut:** Otomatis mendengarkan kembali setelah AI selesai menjawab menggunakan Voice Activity Detection (VAD).
-* **Sela & Bicara:** Tombol interupsi instan untuk memotong ucapan AI dan memulai giliran bicara baru.
-
-### 4. Integrasi Desktop Transparan
-* Tampilan transparan tanpa bingkai (*frameless transparent window*) yang melayang di layar Windows.
-* Backend FastAPI berjalan aman di loopback lokal (`127.0.0.1`) dengan token otentikasi sesi terbatas.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10%20|%203.11%20|%203.12-blue?logo=python" alt="Python Version" />
+  <img src="https://img.shields.io/badge/Node.js-18%2B%20(LTS)-green?logo=nodedotjs" alt="Node Version" />
+  <img src="https://img.shields.io/badge/Three.js-VRM%201.0-orange?logo=three.js" alt="Three.js VRM" />
+  <img src="https://img.shields.io/badge/Platform-Windows%2010%20|%2011-0078D6?logo=windows" alt="Platform Windows" />
+  <img src="https://img.shields.io/badge/License-MIT-lightgrey" alt="License" />
+</p>
 
 ---
 
-## Kebutuhan Sistem
+## 📸 Tampilan Fitur Utama
 
-* **Sistem Operasi:** Windows 10 atau Windows 11 (64-bit)
-* **Python:** Versi 3.10 – 3.12
-* **Node.js:** Versi 18+ (disarankan Node.js 20 atau 24 LTS)
-* **Hardware:** Minimal RAM 8 GB. GPU NVIDIA (VRAM minimal 4 GB) disarankan untuk inferensi STT berbasis CUDA.
+### 1. 3D Pose & Keyframe Editor (Blender & Mixamo Style)
+> Editor pose 3D visual langsung di desktop: putar sendi humanoid dengan gizmo, atur timeline dope-sheet, serta atur kurva interpolasi antar keyframe.
+
+<p align="center">
+  <img src="docs/screenshots/pose-editor.png" alt="3D Pose Editor & Keyframe Interpolation" width="840" style="border-radius: 10px;" />
+</p>
+
+* **Rig Humanoid VRoid Universal**: Langsung kompatibel dengan avatar `.vrm` apapun dari VRoid Studio tanpa perlu re-rigging.
+* **Interpolasi Keyframe (*Easing Curves*)**: Pilih tipe transisi antar keyframe:
+  * `Linear` *(default)* — Gerakan linier konstan.
+  * `Ease In-Out` — Transisi halus dengan akselerasi dan deselerasi natural.
+  * `Ease In` / `Ease Out` — Perlambatan/percepatan halus.
+  * `Step` — Menahan nilai keyframe sampai keyframe berikutnya tiba (*snap/hold*).
+* **Fitur Timeline Lengkap**: Seleksi kotak *marquee*, multi-select (`Shift + Klik`), Copy-Paste keyframe (`Ctrl+C` / `Ctrl+V`), Undo/Redo (`Ctrl+Z` / `Ctrl+Y`), dan ekspor/impor pose JSON.
 
 ---
 
-## Panduan Instalasi & Menjalankan
+### 2. Panel Pengaturan & Pemantau VRAM
+> Konfigurasi model AI, akselerasi STT (CPU / NVIDIA CUDA), dan pantauan VRAM secara real-time.
 
-### 1. Clone Repository
+<p align="center">
+  <img src="docs/screenshots/settings-panel.png" alt="Settings & VRAM Meter" width="560" style="border-radius: 10px;" />
+</p>
+
+* **Faster-Whisper STT**: Opsi model `base` (cepat & ringan) atau `small` (lebih akurat) dengan akselerasi GPU CUDA.
+* **Real-time VRAM Estimator**: Meter VRAM bergaya in-game monitor untuk memastikan penggunaan GPU aman.
+* **Edge-TTS Natural**: Pilihan suara natural bahasa Indonesia (`id-ID-GadisNeural`, `id-ID-ArdiNeural`) serta berbagai bahasa lain.
+* **Mode Rekam Diam & Wake Word**: Deteksi suara latar diam-diam atau aktifkan asisten via kata pemicu (*Wake Word*).
+
+---
+
+## ⚡ Fitur Unggulan
+
+* 🪟 **Desktop Window Transparan**: Melayang elegan di desktop Windows tanpa title bar.
+* 🗣️ **Percakapan Berlanjut & VAD**: Berbicara langsung dengan asisten; otomatis mendengarkan giliran berikutnya setelah AI selesai menjawab.
+* 🛑 **Sela & Bicara (Barge-In)**: Interupsi ucapan AI secara instan kapan saja.
+* 👄 **Real-time Lip Sync**: Gerakan mulut sinkron dengan audio TTS menggunakan *blend shapes* viseme VRM (`aa`, `ih`, `ou`).
+* 👁️ **Gerakan Alami**: Kedipan mata otomatis (*auto-blink*), napas prosedural, dan penelusuran kepala (*head tracking*).
+
+---
+
+## 🚀 Panduan Memulai Cepat
+
+### 1. Clone & Setup Python
 ```powershell
 git clone https://github.com/mgi24/3D-ai-assitant.git
 cd 3D-ai-assitant
-```
 
-### 2. Siapkan Lingkungan Python
-```powershell
 python -m venv .venv
 .venv\Scripts\pip install -r requirements.txt
 ```
 
-### 3. Install Dependensi Node & Build Frontend
+### 2. Install Dependensi Node & Build
 ```powershell
 npm install
 npm run build
 ```
 
-### 4. Konfigurasi Avatar & Environment
-1. Letakkan avatar VRoid Anda berformat `.vrm` di folder:
+### 3. Konfigurasi Environment & Avatar
+1. Letakkan avatar VRoid Anda di:
    ```
    public/avatar/character.vrm
    ```
-2. Salin template `.env.example` menjadi `.env`:
+2. Salin template `.env.example` ke `.env`:
    ```powershell
    copy .env.example .env
    ```
-3. Buka `.env` dan masukkan API Key Anda (misal Gemini API atau OpenAI compatible):
+3. Buka `.env` dan masukkan API Key Anda (Gemini atau OpenAI-compatible):
    ```dotenv
    AI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai
-   AI_API_KEY=masukkan-api-key-anda-disini
+   AI_API_KEY=masukkan-api-key-anda
    AI_MODEL=gemini-2.5-flash
-   TTS_VOICE=id-ID-GadisNeural
-   STT_MODEL=base
-   STT_DEVICE=cpu
    ```
 
-### 5. Jalankan Aplikasi
-Cukup klik dua kali berkas **`start.bat`** atau jalankan perintah:
+### 4. Jalankan Aplikasi
+Cukup klik dua kali **`start.bat`** atau jalankan:
 ```powershell
 .\start.bat
 ```
-*(Atau gunakan perintah `npm run desktop` jika ingin menjalankan runner Electron secara langsung).*
 
 ---
 
-## Pintasan Keyboard (Shortcuts)
+## ⌨️ Pintasan Keyboard
 
-| Shortcut | Aksi |
-| --- | --- |
-| `Space` | Jeda (Pause) atau Lanjutkan (Resume) playback preview pose |
-| `Ctrl + Z` | Undo perubahan pose / pergeseran keyframe |
+| Shortcut | Fungsi |
+| :--- | :--- |
+| `Space` | Pause / Resume playback preview pose |
+| `Ctrl + Z` | Undo perubahan pose atau pergeseran keyframe |
 | `Ctrl + Y` | Redo perubahan pose |
-| `Ctrl + C` | Salin (*Copy*) keyframe terpilih ke clipboard |
-| `Ctrl + V` | Tempel (*Paste*) keyframe pada posisi waktu scrubber timeline |
-| `Ctrl + A` | Pilih semua keyframe pada timeline pose |
-| `Shift + Klik` | Multi-pilih keyframe marker pada timeline |
-| `Alt + F4` | Menutup aplikasi dan mematikan backend secara bersih |
+| `Ctrl + C` | Salin (*Copy*) keyframe terpilih |
+| `Ctrl + V` | Tempel (*Paste*) keyframe pada posisi waktu scrubber |
+| `Ctrl + A` | Pilih semua keyframe pada timeline |
+| `Shift + Klik` | Multi-seleksi marker keyframe |
+| `Alt + F4` | Tutup aplikasi & matikan backend bersih |
 
 ---
 
-## Struktur Direktori
+## 📁 Struktur Singkat Proyek
 
 ```
-├── .env.example            # Template konfigurasi environment
-├── .gitignore              # Konfigurasi filter berkas Git
-├── desktop-main.cjs        # Main process Electron untuk desktop transparan
-├── desktop-preload.cjs     # Preload bridge aman ke antarmuka web
-├── server.py               # Backend FastAPI (STT, TTS, Chat API, resource limit)
-├── start.bat               # Skrip peluncur satu klik untuk Windows
-├── package.json            # Dependensi frontend & script NPM
-├── requirements.txt        # Dependensi Python
-├── index.html              # Struktur UI aplikasi desktop & Pose Editor
+├── desktop-main.cjs       # Runner Electron window transparan
+├── server.py              # Backend FastAPI (STT, TTS, Chat API)
+├── start.bat              # Peluncur Windows satu klik
+├── index.html             # UI Desktop & Pose Editor
 ├── src/
-│   ├── avatar.js           # Three.js & VRM loader, kontrol ekspresi, eye tracking
-│   ├── pose-controller.js  # Engine animasi pose, evaluasi easing & interpolasi
-│   ├── main.js             # State manager percakapan, audio stream, Pose Browser logic
-│   └── style.css           # Styling bertema modern glassmorphism
+│   ├── avatar.js          # Three.js + VRM 1.0 humanoid loader
+│   ├── pose-controller.js # Engine animasi pose & interpolasi easing
+│   ├── main.js            # Audio pipeline, state chat & timeline logic
+│   └── style.css          # Glassmorphism aesthetic theme
 ├── public/
-│   ├── avatar/             # Tempat berkas avatar VRM (character.vrm)
-│   └── poses/              # Berkas pose bawaan (.json)
-├── scripts/                # Skrip helper & automated test (Playwright & Python)
-├── tests/                  # Backend unit tests
-└── docs/                   # Dokumentasi teknis & verifikasi
+│   ├── avatar/            # Letakkan character.vrm di sini
+│   └── poses/             # Klip pose bawaan (.json)
+├── scripts/               # Automated test Playwright & screenshot capture
+└── docs/screenshots/     # Berkas pratinjau antarmuka GitHub
 ```
 
 ---
 
-## Pengujian & Verifikasi
+## 🤝 Kontribusi & Dukungan
 
-Proyek ini telah dilengkapi serangkaian pengujian terotomatisasi menggunakan Playwright dan pytest:
+Kontribusi, *bug report*, dan *feature request* sangat dipersilakan!
+1. Fork repository ini
+2. Buat branch fitur baru (`git checkout -b fitur-keren`)
+3. Commit perubahan (`git commit -m 'feat: tambah fitur keren'`)
+4. Push ke branch (`git push origin fitur-keren`)
+5. Ajukan **Pull Request**
 
-```powershell
-# Jalankan pengujian animasi & pose capture avatar
-npm run test:poses
-
-# Jalankan pengujian fitur multi-select & copy-paste keyframe
-node scripts/test_copy_paste_keyframes.mjs
-
-# Jalankan pengujian fitur interpolasi keyframe (easing)
-node scripts/test_keyframe_interpolation.mjs
-
-# Jalankan pengujian unit server backend
-.venv\Scripts\pytest tests/test_server.py -q
-```
-
----
-
-## Lisensi & Referensi Pihak Ketiga
-
-* [pixiv/three-vrm](https://github.com/pixiv/three-vrm) - Parser dan runtime 3D Humanoid VRM untuk Three.js.
-* [SYSTRAN/faster-whisper](https://github.com/SYSTRAN/faster-whisper) - Speech-to-Text inference berbasis CTranslate2.
-* [rany2/edge-tts](https://github.com/rany2/edge-tts) - Layanan Microsoft Edge Text-to-Speech tanpa API key berbayar.
-* [pixiv/ChatVRM](https://github.com/pixiv/ChatVRM) - Referensi pola arsitektur interaksi VRM.
+⭐ Beri bintang repository ini jika Anda menyukai proyek ini!
