@@ -255,6 +255,23 @@ async def health():
     }
 
 
+@app.get('/api/avatars')
+async def list_avatars():
+    avatar_dir = ROOT / 'public' / 'avatar'
+    if not avatar_dir.exists():
+        avatar_dir = ROOT / 'dist' / 'avatar'
+    files = []
+    if avatar_dir.exists():
+        for p in sorted(avatar_dir.glob('*.vrm')):
+            files.append({
+                'name': p.stem,
+                'fileName': p.name,
+                'url': f'avatar/{p.name}',
+                'sizeMB': round(p.stat().st_size / (1024 * 1024), 2)
+            })
+    return {'ok': True, 'avatars': files}
+
+
 @app.post('/api/chat')
 async def chat(data: ChatInput, request: Request):
     if not API_KEY or not BASE_URL:

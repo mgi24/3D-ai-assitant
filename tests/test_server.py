@@ -201,3 +201,13 @@ def test_llm_test_endpoint(client):
         assert data['recommended'] == 'gemini-3.1-flash-lite'
     finally:
         server.app.state.http = original
+
+
+def test_avatars_endpoint(client):
+    res = client.get('/api/avatars')
+    assert res.status_code == 200
+    data = res.json()
+    assert data['ok'] is True
+    avatar_names = [a['fileName'] for a in data['avatars']]
+    assert 'character.vrm' in avatar_names
+    assert 'servermmv.vrm' in avatar_names

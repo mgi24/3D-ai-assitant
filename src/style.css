@@ -1342,6 +1342,68 @@ body.selecting-marquee * {
   color: #9b4b3f;
 }
 
+.pose-model-selector-wrap {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border: 1px solid #d6e3d3;
+  border-radius: 9px;
+  background: #f7faf5;
+}
+
+.pose-model-selector-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.pose-model-badge {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid #cadbc9;
+  background: #e5efe4;
+  color: #2e5238;
+}
+
+.pose-model-selector-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pose-model-select {
+  flex: 1;
+  padding: 5px 8px;
+  font-size: 10px;
+  border: 1px solid #c8d8c6;
+  border-radius: 6px;
+  background: #fff;
+  color: #1a2a1d;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pose-model-select:focus {
+  outline: none;
+  border-color: #315941;
+  box-shadow: 0 0 0 2px rgba(49, 89, 65, 0.15);
+}
+
+.pose-model-select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pose-model-status {
+  margin: 5px 0 0;
+  font-size: 8.5px;
+  color: #718873;
+}
+
+
 @media (max-width: 620px) {
   .pose-browser-layout { grid-template-columns: 122px minmax(0, 1fr); }
   .pose-browser-workspace { padding: 10px 9px 12px; }

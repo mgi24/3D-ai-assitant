@@ -5,7 +5,7 @@ const $ = id => document.getElementById(id);
 const isPoseWindow = new URLSearchParams(location.search).get('poseBrowser') === '1';
 if (isPoseWindow) document.body.classList.add('pose-window');
 const DEFAULT_SYSTEM_PROMPT = 'You are Mamad, a friendly virtual avatar assistant speaking naturally in Indonesian. Use the language requested by the user. Reply briefly in 1-3 conversational sentences unless more detail is requested. You can speak, blink and gesture through a VRoid avatar. Be honest: you cannot see, control the PC, open files, or use tools. Return ONLY a JSON object with keys text (your spoken answer, no markdown), emotion (neutral, happy, sad, relaxed, surprised, angry), gesture (talk, wave, nod, think, none). Never include internal reasoning.';
-const defaults = { name: 'Mamad', systemPrompt: DEFAULT_SYSTEM_PROMPT, voice: 'id-ID-GadisNeural', rate: 0, fps: 30, device: '' };
+const defaults = { name: 'Mamad', systemPrompt: DEFAULT_SYSTEM_PROMPT, voice: 'id-ID-GadisNeural', rate: 0, fps: 30, device: '', avatarModel: 'avatar/character.vrm' };
 let settings;
 try {
   settings = { ...defaults, ...JSON.parse(localStorage.getItem('aichat-settings') || '{}') };
@@ -424,7 +424,8 @@ function saveSettings() {
     voice: $('voice-setting').value,
     rate: Number($('rate-setting').value),
     fps: Number($('fps-setting').value),
-    device: $('device-setting').value
+    device: $('device-setting').value,
+    avatarModel: settings.avatarModel || 'avatar/character.vrm'
   };
   localStorage.setItem('aichat-settings', JSON.stringify(settings));
   if ($('companion-name')) $('companion-name').textContent = settings.name;
@@ -562,6 +563,12 @@ function ensurePosePreviewAvatar() {
   const stage = $('pose-preview-stage');
   if (!stage) return;
   try {
+    const previewModelUrl = avatar?.currentModelUrl || (settings.avatarModel
+      ? (settings.avatarModel.startsWith('http') || settings.avatarModel.startsWith('/')
+          ? settings.avatarModel
+          : `${import.meta.env.BASE_URL}${settings.avatarModel.replace(/^\/+/, '')}`)
+      : undefined);
+
     posePreviewAvatar = new AvatarStage(stage, () => {
       posePreviewAvatar.paused = false;
       posePreviewAvatar.setArmatureEditorVisible?.(!!poseManager.draft);
@@ -573,6 +580,7 @@ function ensurePosePreviewAvatar() {
     }, error => {
       poseManagerSetStatus(`Preview avatar gagal dimuat: ${error.message || error}`, true);
     }, {
+      modelUrl: previewModelUrl,
       enablePan: true,
       enableArmatureEditor: true,
       onEditorBoneSelect: poseManagerSelectBone,
@@ -1806,9 +1814,111 @@ function poseManagerExport() {
   poseManagerSetStatus(`JSON ${name}.json diekspor.`);
 }
 
+async function poseManagerPopulateModelList() {
+  const select = $('pose-model-select');
+  const statusEl = $('pose-model-status');
+  if (!select) return;
+
+  let avatars = [];
+  try {
+    const res = await fetch('/api/avatars');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.ok && Array.isArray(data.avatars) && data.avatars.length > 0) {
+        avatars = data.avatars;
+      }
+    }
+  } catch (err) {
+    console.warn('Could not fetch avatars list:', err);
+  }
+
+  if (!avatars.length) {
+    avatars = [
+      { name: 'character', fileName: 'character.vrm', url: 'avatar/character.vrm' },
+      { name: 'servermmv', fileName: 'servermmv.vrm', url: 'avatar/servermmv.vrm' }
+    ];
+  }
+
+  select.replaceChildren();
+  const currentActiveUrl = posePreviewAvatar?.currentModelUrl || avatar?.currentModelUrl || settings.avatarModel || 'avatar/character.vrm';
+  const currentActiveFile = currentActiveUrl.split('?')[0].split('/').pop();
+
+  for (const av of avatars) {
+    const option = document.createElement('option');
+    option.value = av.url || `avatar/${av.fileName}`;
+    const sizeText = av.sizeMB ? ` (${av.sizeMB} MB)` : '';
+    option.textContent = `${av.fileName || av.name}${sizeText}`;
+    if (av.fileName === currentActiveFile || option.value.endsWith(`/${currentActiveFile}`)) {
+      option.selected = true;
+    }
+    select.appendChild(option);
+  }
+
+  if (statusEl) {
+    statusEl.textContent = `Model aktif: ${currentActiveFile}`;
+  }
+}
+
+async function poseManagerChangeModel(url) {
+  if (!url) return;
+  const select = $('pose-model-select');
+  const statusEl = $('pose-model-status');
+  const filename = url.split('?')[0].split('/').pop();
+
+  if (select) select.disabled = true;
+  if (statusEl) statusEl.textContent = `Memuat model ${filename}…`;
+  poseManagerSetStatus(`Memuat model avatar: ${filename}…`);
+
+  const fullUrl = url.startsWith('http') || url.startsWith('/')
+    ? url
+    : `${import.meta.env.BASE_URL}${url.replace(/^\/+/, '')}`;
+
+  try {
+    const targetAvatar = posePreviewAvatar || avatar;
+    if (targetAvatar) {
+      await targetAvatar.load(fullUrl);
+      targetAvatar.paused = false;
+
+      // Transfer active pose draft onto the newly loaded model
+      if (poseManager.draft) {
+        targetAvatar.setPoseClip(poseManager.draft);
+        targetAvatar.setArmatureEditorVisible?.(true);
+        if (poseManager.selectedBone) {
+          targetAvatar.selectEditorBone?.(poseManager.selectedBone);
+        }
+        if (poseManager.previewing) {
+          targetAvatar.previewPose?.(poseManager.draft.name, true);
+          if (poseManager.previewPaused) {
+            targetAvatar.pausePosePreview?.();
+          }
+          targetAvatar.seekPosePreview?.(poseManager.selectedTime);
+        }
+      }
+
+      // Sync the main companion avatar if separate
+      if (avatar && avatar !== targetAvatar) {
+        avatar.load(fullUrl).catch(err => console.warn('Syncing main avatar failed:', err));
+      }
+
+      settings.avatarModel = url;
+      localStorage.setItem('aichat-settings', JSON.stringify(settings));
+
+      if (statusEl) statusEl.textContent = `Model aktif: ${filename}`;
+      poseManagerSetStatus(`Model ${filename} berhasil dimuat. Bone & pose terhubung.`);
+    }
+  } catch (err) {
+    console.error('Failed to change avatar model:', err);
+    if (statusEl) statusEl.textContent = `Gagal memuat ${filename}`;
+    poseManagerSetStatus(`Gagal memuat model ${filename}: ${err.message || err}`, true);
+  } finally {
+    if (select) select.disabled = false;
+  }
+}
+
 function poseManagerInitialize() {
   if (poseManager.initialized) {
     poseManagerRefreshList();
+    poseManagerPopulateModelList();
     return;
   }
   poseManager.initialized = true;
@@ -1846,6 +1956,10 @@ function poseManagerInitialize() {
   if (interpSelect) {
     interpSelect.onchange = e => poseManagerSetKeyframeInterpolation(e.target.value);
   }
+  const modelSelect = $('pose-model-select');
+  if (modelSelect) {
+    modelSelect.onchange = e => poseManagerChangeModel(e.target.value);
+  }
   $('pose-rotate-tool').onclick = () => poseManagerSetEditorTool('rotate');
   $('pose-save-btn').onclick = poseManagerSave;
   $('pose-reset-btn').onclick = poseManagerReset;
@@ -1856,6 +1970,7 @@ function poseManagerInitialize() {
     $(id).addEventListener('change', poseManagerUpdateRuntime);
   }
   poseManagerRefreshList();
+  poseManagerPopulateModelList();
   poseManagerPreview();
   poseManagerStartTimeline();
 }
@@ -2319,6 +2434,11 @@ window.addEventListener('paste', e => {
 
 // Initialize 3D Avatar
 try {
+  const initialModelUrl = settings.avatarModel
+    ? (settings.avatarModel.startsWith('http') || settings.avatarModel.startsWith('/')
+        ? settings.avatarModel
+        : `${import.meta.env.BASE_URL}${settings.avatarModel.replace(/^\/+/, '')}`)
+    : undefined;
   avatar = new AvatarStage(isPoseWindow ? $('pose-preview-stage') : $('avatar-stage'), info => {
     if ($('avatar-error')) $('avatar-error').hidden = true;
     document.body.dataset.avatar = 'ready';
@@ -2333,6 +2453,7 @@ try {
     document.body.dataset.avatar = 'error';
     console.error('Avatar load failed', err);
   }, {
+    modelUrl: initialModelUrl,
     enablePan: isPoseWindow,
     enableArmatureEditor: isPoseWindow,
     onEditorBoneSelect: poseManagerSelectBone,

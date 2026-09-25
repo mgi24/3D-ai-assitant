@@ -87,7 +87,8 @@ export class AvatarStage {
     this.lastUpdate = 0;
     this.animate = this.animate.bind(this);
     this.raf = requestAnimationFrame(this.animate);
-    this.load(`${import.meta.env.BASE_URL}avatar/character.vrm`);
+    this.currentModelUrl = options.modelUrl || `${import.meta.env.BASE_URL}avatar/character.vrm`;
+    this.load(this.currentModelUrl);
   }
 
   resize() {
@@ -98,6 +99,7 @@ export class AvatarStage {
   }
 
   async load(url) {
+    this.currentModelUrl = url;
     try {
       const loader = new GLTFLoader();
       loader.register(parser => new VRMLoaderPlugin(parser));
@@ -151,7 +153,7 @@ export class AvatarStage {
     return this.poseController?.setClip(clip) || false;
   }
   setupArmatureEditor() {
-    if (!this.editorEnabled || this.transformControls || !this.vrm) return;
+    if (!this.editorEnabled || !this.vrm) return;
     this.editorBoneNames = EDITOR_BONE_NAMES.filter(name => this.bones?.[name]);
     const editableBones = new Set(this.editorBoneNames.map(name => this.bones[name]));
     this.armaturePairs = [];
@@ -160,6 +162,13 @@ export class AvatarStage {
       let parent = bone?.parent || null;
       while (parent && !editableBones.has(parent)) parent = parent.parent;
       if (parent && parent !== bone) this.armaturePairs.push([parent, bone]);
+    }
+
+    if (this.armatureHelper) {
+      this.scene.remove(this.armatureHelper);
+      this.armatureLineGeometry?.dispose();
+      this.armatureJointGeometry?.dispose();
+      this.armatureHelper = null;
     }
 
     // Draw only the normalized humanoid armature. The VRM scene also contains
@@ -196,32 +205,43 @@ export class AvatarStage {
     this.armatureJoints.renderOrder = 21;
     this.armatureHelper = new THREE.Group();
     this.armatureHelper.add(this.armatureLines, this.armatureJoints);
-    this.armatureHelper.visible = false;
+    this.armatureHelper.visible = !!this.editorVisible;
     this.scene.add(this.armatureHelper);
     this.updateArmatureHelper();
 
-    this.transformControls = new TransformControls(this.camera, this.renderer.domElement);
-    this.transformControls.setMode(this.editorMode);
-    this.transformControls.setSpace('local');
-    this.transformControls.setSize(0.72);
-    this.transformControls.getHelper().renderOrder = 25;
-    this.transformControls.getHelper().visible = false;
-    this.scene.add(this.transformControls.getHelper());
-    this.transformControls.addEventListener('dragging-changed', event => {
-      this.editorWasDragging = !!event.value;
-      this.controls.enabled = !event.value;
-      this.options.onEditorDrag?.(!!event.value);
-    });
-    this.transformControls.addEventListener('objectChange', () => {
-      const bone = this.bones?.[this.editorSelectedBone];
-      if (!bone || !this.editorVisible) return;
-      const transform = this.getEditorBoneTransform(this.editorSelectedBone);
-      this.options.onEditorTransform?.({
-        bone: this.editorSelectedBone,
-        rotation: transform.rotation,
-        position: transform.position
+    if (!this.transformControls) {
+      this.transformControls = new TransformControls(this.camera, this.renderer.domElement);
+      this.transformControls.setMode(this.editorMode);
+      this.transformControls.setSpace('local');
+      this.transformControls.setSize(0.72);
+      this.transformControls.getHelper().renderOrder = 25;
+      this.transformControls.getHelper().visible = false;
+      this.scene.add(this.transformControls.getHelper());
+      this.transformControls.addEventListener('dragging-changed', event => {
+        this.editorWasDragging = !!event.value;
+        this.controls.enabled = !event.value;
+        this.options.onEditorDrag?.(!!event.value);
       });
-    });
+      this.transformControls.addEventListener('objectChange', () => {
+        const bone = this.bones?.[this.editorSelectedBone];
+        if (!bone || !this.editorVisible) return;
+        const transform = this.getEditorBoneTransform(this.editorSelectedBone);
+        this.options.onEditorTransform?.({
+          bone: this.editorSelectedBone,
+          rotation: transform.rotation,
+          position: transform.position
+        });
+      });
+    } else {
+      this.transformControls.detach();
+      if (this.editorSelectedBone && this.editorVisible) {
+        const bone = this.bones?.[this.editorSelectedBone];
+        if (bone) {
+          this.transformControls.attach(bone);
+          this.transformControls.getHelper().visible = true;
+        }
+      }
+    }
   }
   pickEditorBone(clientX, clientY) {
     if (!this.vrm || !this.bones || !this.editorBoneNames?.length) return null;
