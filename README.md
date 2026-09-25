@@ -1,12 +1,12 @@
 # 3D AI Assistant · VRoid Desktop Companion
 
 <p align="center">
-  <img src="docs/screenshots/desktop-assistant.png" alt="3D AI Assistant Desktop Preview" width="720" style="border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
+  <img src="docs/screenshots/desktop-transparency.png" alt="3D AI Assistant Floating Desktop Preview" width="560" style="border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
 </p>
 
 <p align="center">
   <b>Asisten avatar 3D interaktif dan transparan untuk desktop Windows.</b><br>
-  Didukung oleh <b>VRoid Studio (Three.js VRM 1.0)</b>, <b>Faster-Whisper (STT)</b>, <b>Edge-TTS</b>, <b>Gemini / OpenAI API</b>, serta <b>3D Pose Editor</b> dengan kurva interpolasi (*easing*).
+  Melayang tanpa bingkai (*frameless*) di atas aplikasi aktif Anda. Didukung oleh <b>VRoid Studio (Three.js VRM 1.0)</b>, <b>Faster-Whisper (STT)</b>, <b>Edge-TTS</b>, <b>Gemini / OpenAI API</b>, serta <b>3D Pose Editor</b> dengan kurva interpolasi (*easing*).
 </p>
 
 <p align="center">
@@ -21,44 +21,48 @@
 
 ## 📸 Tampilan Fitur Utama
 
-### 1. 3D Pose & Keyframe Editor (Blender & Mixamo Style)
-> Editor pose 3D visual langsung di desktop: putar sendi humanoid dengan gizmo, atur timeline dope-sheet, serta atur kurva interpolasi antar keyframe.
+### 1. Transparansi Desktop & Interaksi Suara
+> Avatar melayang secara transparan di atas layar kerja Anda tanpa mengganggu aktivitas lain, dilengkapi laci percakapan (*conversation drawer*) dan status mikrofon.
 
 <p align="center">
-  <img src="docs/screenshots/pose-editor.png" alt="3D Pose Editor & Keyframe Interpolation" width="840" style="border-radius: 10px;" />
+  <img src="docs/screenshots/desktop-assistant.png" alt="Desktop Voice & Chat Assistant" width="620" style="border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);" />
 </p>
 
-* **Rig Humanoid VRoid Universal**: Langsung kompatibel dengan avatar `.vrm` apapun dari VRoid Studio tanpa perlu re-rigging.
-* **Interpolasi Keyframe (*Easing Curves*)**: Pilih tipe transisi antar keyframe:
-  * `Linear` *(default)* — Gerakan linier konstan.
-  * `Ease In-Out` — Transisi halus dengan akselerasi dan deselerasi natural.
+* 🪟 **True Window Transparency**: Melayang di atas software apapun (browser, IDE coding, game, dokumen).
+* 🎙️ **Percakapan Berlanjut**: Berbicara secara natural dengan jeda hening otomatis (*Voice Activity Detection*).
+* 🛑 **Sela & Bicara**: Potong ucapan asisten kapan saja secara instan.
+* 👄 **Lip-Sync Real-time**: Mulut bergerak sinkron mengikuti suara AI melalui ekspresi VRM (`aa`, `ih`, `ou`).
+
+---
+
+### 2. 3D Pose & Keyframe Editor (Blender & Mixamo Style)
+> Editor pose 3D visual: pilih tulang humanoid dengan gizmo rotasi, kelola dope-sheet timeline, serta tentukan kurva interpolasi antar keyframe.
+
+<p align="center">
+  <img src="docs/screenshots/pose-editor.png" alt="3D Pose Editor & Keyframe Interpolation" width="840" style="border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);" />
+</p>
+
+* **Rig Humanoid VRoid Universal**: Langsung kompatibel dengan file `.vrm` apapun dari VRoid Studio tanpa perlu re-rigging.
+* **Interpolasi Keyframe (*Easing Curves*)**:
+  * `Linear` *(default)* — Transisi konstan antar pose.
+  * `Ease In-Out` — Transisi luwes dan natural (akselerasi di awal, deselerasi di akhir).
   * `Ease In` / `Ease Out` — Perlambatan/percepatan halus.
-  * `Step` — Menahan nilai keyframe sampai keyframe berikutnya tiba (*snap/hold*).
-* **Fitur Timeline Lengkap**: Seleksi kotak *marquee*, multi-select (`Shift + Klik`), Copy-Paste keyframe (`Ctrl+C` / `Ctrl+V`), Undo/Redo (`Ctrl+Z` / `Ctrl+Y`), dan ekspor/impor pose JSON.
+  * `Step` — Menahan pose statis sampai keyframe berikutnya tiba (*hold/snap*).
+* **Fitur Timeline Lengkap**: Seleksi kotak *marquee*, multi-select (`Shift + Klik`), Copy-Paste keyframe (`Ctrl+C` / `Ctrl+V`), Undo/Redo bertingkat (`Ctrl+Z` / `Ctrl+Y`), dan ekspor/impor file `.json`.
 
 ---
 
-### 2. Panel Pengaturan & Pemantau VRAM
-> Konfigurasi model AI, akselerasi STT (CPU / NVIDIA CUDA), dan pantauan VRAM secara real-time.
+### 3. Panel Pengaturan & Monitor VRAM Real-time
+> Pengaturan hardware audio, pilihan model Faster-Whisper (CPU / GPU CUDA), dan pemantau VRAM.
 
 <p align="center">
-  <img src="docs/screenshots/settings-panel.png" alt="Settings & VRAM Meter" width="560" style="border-radius: 10px;" />
+  <img src="docs/screenshots/settings-panel.png" alt="Settings & VRAM Meter" width="520" style="border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,0.25);" />
 </p>
 
-* **Faster-Whisper STT**: Opsi model `base` (cepat & ringan) atau `small` (lebih akurat) dengan akselerasi GPU CUDA.
-* **Real-time VRAM Estimator**: Meter VRAM bergaya in-game monitor untuk memastikan penggunaan GPU aman.
-* **Edge-TTS Natural**: Pilihan suara natural bahasa Indonesia (`id-ID-GadisNeural`, `id-ID-ArdiNeural`) serta berbagai bahasa lain.
-* **Mode Rekam Diam & Wake Word**: Deteksi suara latar diam-diam atau aktifkan asisten via kata pemicu (*Wake Word*).
-
----
-
-## ⚡ Fitur Unggulan
-
-* 🪟 **Desktop Window Transparan**: Melayang elegan di desktop Windows tanpa title bar.
-* 🗣️ **Percakapan Berlanjut & VAD**: Berbicara langsung dengan asisten; otomatis mendengarkan giliran berikutnya setelah AI selesai menjawab.
-* 🛑 **Sela & Bicara (Barge-In)**: Interupsi ucapan AI secara instan kapan saja.
-* 👄 **Real-time Lip Sync**: Gerakan mulut sinkron dengan audio TTS menggunakan *blend shapes* viseme VRM (`aa`, `ih`, `ou`).
-* 👁️ **Gerakan Alami**: Kedipan mata otomatis (*auto-blink*), napas prosedural, dan penelusuran kepala (*head tracking*).
+* **Faster-Whisper STT**: Opsi model `base` (cepat & hemat) atau `small` (akurat) dengan akselerasi NVIDIA CUDA.
+* **Estimasi VRAM Real-time**: Indikator VRAM bergaya *in-game monitor* untuk memantau kapasitas memori GPU.
+* **Edge-TTS Berkualitas**: Suara natural bahasa Indonesia (`id-ID-GadisNeural`, `id-ID-ArdiNeural`) tanpa biaya langganan API TTS.
+* **Kata Pemicu (Wake Word)**: Mode rekam hening di latar belakang yang aktif saat kata pemicu diucapkan.
 
 ---
 
